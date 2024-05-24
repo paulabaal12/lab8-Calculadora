@@ -1,46 +1,118 @@
-import React from 'react';
 import Button from './Button';
-import styles from '../styles/Keypad.module.css';
+import styles from '../styles/Calculator.module.css';
 
 const Keypad = ({ handleClick }) => {
-  const numbers = [7, 8, 9, 4, 5, 6, 1, 2, 3, 0];
-  const operations = ['+', '-', '*', '/'];
-  const specialButtons = ['C', 'CE', '%'];
-
   return (
     <div className={styles.keypad}>
       <div className={styles.row}>
-        {specialButtons.map((btn) => (
-          <Button key={btn} value={btn} onClick={handleClick} special />
-        ))}
-        <Button value="/" onClick={handleClick} operation />
-      </div>
-      <div className={styles.row}>
-        {numbers.slice(6, 9).map((num) => (
-          <Button key={num} value={num} onClick={handleClick} />
-        ))}
-        <Button value="*" onClick={handleClick} operation />
-      </div>
-      <div className={styles.row}>
-        {numbers.slice(3, 6).map((num) => (
-          <Button key={num} value={num} onClick={handleClick} />
-        ))}
-        <Button value="-" onClick={handleClick} operation />
-      </div>
-      <div className={styles.row}>
-        {numbers.slice(0, 3).map((num) => (
-          <Button key={num} value={num} onClick={handleClick} />
-        ))}
-        <Button value="+" onClick={handleClick} operation />
+        <Button
+          value="CE"
+          onClick={(value) => handleClick(value, false, true)}
+          className={`${styles.button} ${styles.specialButton}`}
+        />
+        <Button
+          value="C"
+          onClick={(value) => handleClick(value, false, true)}
+          className={`${styles.button} ${styles.specialButton}`}
+        />
+        <Button
+          value="+/-"
+          onClick={(value) => handleClick(value, false, true)}
+          className={`${styles.button} ${styles.specialButton}`}
+        />
+        <Button
+          value="%"
+          onClick={(value) => handleClick(value, false, true)}
+          className={`${styles.button} ${styles.specialButton}`}
+        />
       </div>
       <div className={styles.row}>
         <Button
-          value={0}
-          onClick={handleClick}
-          className={styles.zeroButton}
+          value="7"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
         />
-        <Button value="." onClick={handleClick} />
-        <Button value="=" onClick={handleClick} operation />
+        <Button
+          value="8"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
+        />
+        <Button
+          value="9"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
+        />
+        <Button
+          value="/"
+          onClick={(value) => handleClick(value, true)}
+          className={`${styles.button} ${styles.operationButton}`}
+        />
+      </div>
+      <div className={styles.row}>
+        <Button
+          value="4"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
+        />
+        <Button
+          value="5"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
+        />
+        <Button
+          value="6"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
+        />
+        <Button
+          value="*"
+          onClick={(value) => handleClick(value, true)}
+          className={`${styles.button} ${styles.operationButton}`}
+        />
+      </div>
+      <div className={styles.row}>
+        <Button
+          value="1"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
+        />
+        <Button
+          value="2"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
+        />
+        <Button
+          value="3"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton}`}
+        />
+        <Button
+          value="-"
+          onClick={(value) => handleClick(value, true)}
+          className={`${styles.button} ${styles.operationButton}`}
+        />
+      </div>
+      <div className={styles.row}>
+        <Button
+          value="0"
+          onClick={(value) => handleClick(value)}
+          className={`${styles.button} ${styles.numberButton} ${styles.zeroButton}`}
+        />
+        <Button
+          value="."
+          onClick={(value) => handleClick(value, true)}
+          className={`${styles.button} ${styles.operationButton}`}
+        />
+        <Button
+          value="="
+          onClick={(value) => handleClick(value, true)}
+          className={`${styles.button} ${styles.operationButton}`}
+        />
+        <Button
+          value="+"
+          onClick={(value) => handleClick(value, true)}
+          className={`${styles.button} ${styles.operationButton}`}
+        />
       </div>
     </div>
   );

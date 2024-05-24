@@ -1,13 +1,13 @@
 import React from 'react';
-import styles from '../styles/Button.module.css';
 
-const Button = ({ value, onClick, operation, special }) => {
-  const buttonClass = `${styles.button} ${
-    operation ? styles.operationButton : special ? styles.specialButton : styles.numberButton
-  }`;
+const Button = ({ value, onClick, className, isActive, setActive }) => {
+  const handleClick = () => {
+    onClick(value);
+    setActive(value);
+  };
 
   return (
-    <button className={buttonClass} onClick={() => onClick(value, operation, special)}>
+    <button className={`${className} ${isActive ? 'active' : ''}`} onClick={handleClick}>
       {value}
     </button>
   );

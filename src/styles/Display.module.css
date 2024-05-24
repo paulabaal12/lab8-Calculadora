@@ -1,13 +1,15 @@
+
 .display {
-    background-color: white;
-    padding: 10px;
-    text-align: right;
-    font-size: 24px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-  }
-  
-  .displayValue {
-    word-wrap: break-word;
-    max-width: 100%;
-  }
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 20px;
+  width: 240px;
+  text-align: right;
+}
+
+.displayValue {
+  font-size: 2rem;
+  font-weight: bold;
+}

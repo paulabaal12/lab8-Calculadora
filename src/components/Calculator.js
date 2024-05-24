@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Display from './Display';
 import Keypad from './Keypad';
 import styles from '../styles/Calculator.module.css';
 
 const Calculator = () => {
   const [displayValue, setDisplayValue] = useState('0');
-  const [currentValue, setCurrentValue] = useState('0');
+  const [currentValue, setCurrentValue] = useState('');
   const [operation, setOperation] = useState(null);
+  const [maxDigits, setMaxDigits] = useState(9); // Nuevo estado para controlar el límite de dígitos
 
   const handleClick = (value, isOperation, isSpecial) => {
     if (isSpecial) {
@@ -19,8 +20,11 @@ const Calculator = () => {
   };
 
   const handleNumber = (value) => {
-    if (displayValue.length < 9) {
-      setDisplayValue((prev) => (prev === '0' ? value : prev + value));
+    if (displayValue.length < maxDigits || (displayValue === '0' && value === '.')) {
+      setDisplayValue((prev) => {
+        const newValue = prev === '0' && !operation ? value : prev + value;
+        return newValue;
+      });
     }
   };
 
@@ -28,9 +32,13 @@ const Calculator = () => {
     if (op === '=') {
       performOperation();
     } else {
+      if (currentValue === '') {
+        setCurrentValue(displayValue);
+      } else {
+        performOperation();
+      }
       setOperation(op);
-      setCurrentValue(displayValue);
-      setDisplayValue('0');
+      setMaxDigits(9); // Restablecer el límite de dígitos
     }
   };
 
@@ -38,8 +46,9 @@ const Calculator = () => {
     switch (value) {
       case 'C':
         setDisplayValue('0');
-        setCurrentValue('0');
+        setCurrentValue('');
         setOperation(null);
+        setMaxDigits(9); // Restablecer el límite de dígitos
         break;
       case 'CE':
         setDisplayValue('0');
@@ -47,6 +56,10 @@ const Calculator = () => {
       case '%':
         const number = parseFloat(displayValue);
         setDisplayValue((number / 100).toString());
+        break;
+      case '+/-':
+        const num = parseFloat(displayValue);
+        setDisplayValue((-num).toString());
         break;
       default:
         break;
@@ -75,15 +88,41 @@ const Calculator = () => {
         break;
     }
 
-    if (result < 0 || result > 999999999) {
+    if (result < 0) {
+      setDisplayValue('ERROR');
+    } else if (result > 999999999) {
       setDisplayValue('ERROR');
     } else {
-      setDisplayValue(result.toString());
+      setDisplayValue(result.toString().slice(0, 9));
+      setCurrentValue(result.toString().slice(0, 9)); // Actualizar currentValue con el resultado
     }
 
     setOperation(null);
-    setCurrentValue('0');
+    setMaxDigits(9); // Restablecer el límite de dígitos
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const { key } = event;
+      if (/\d/.test(key)) {
+        if (displayValue.length >= maxDigits) return;
+        handleClick(key);
+      } else if (/[-+/*=]/.test(key)) {
+        handleClick(key, true);
+      } else if (key === 'Backspace') {
+        handleClick('CE', false, true);
+      } else if (key === 'Delete') {
+        handleClick('C', false, true);
+      } else if (key === 'Enter') {
+        handleClick('=', true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [displayValue, maxDigits, handleClick]);
 
   return (
     <div className={styles.container}>
