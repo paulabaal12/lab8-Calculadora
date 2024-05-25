@@ -5,73 +5,78 @@ import styles from '../styles/Calculator.module.css';
 
 const Calculator = () => {
   const [displayValue, setDisplayValue] = useState('0');
-  const [currentValue, setCurrentValue] = useState('');
-  const [operation, setOperation] = useState(null);
-  const [maxDigits, setMaxDigits] = useState(9); // Nuevo estado para controlar el límite de dígitos
+  const [operator, setOperator] = useState(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
+  const [value, setValue] = useState(null);
+  const [activeButton, setActiveButton] = useState(null);
 
-  const handleClick = (value, isOperation, isSpecial) => {
-    if (isSpecial) {
-      handleSpecialButton(value);
-    } else if (isOperation) {
-      handleOperation(value);
-    } else {
-      handleNumber(value);
-    }
-  };
+  const handleButtonClick = (label) => {
+    if (/\d/.test(label)) {
+      if (displayValue.length >= 9) return;
 
-  const handleNumber = (value) => {
-    if (displayValue.length < maxDigits || (displayValue === '0' && value === '.')) {
-      setDisplayValue((prev) => {
-        const newValue = prev === '0' && !operation ? value : prev + value;
-        return newValue;
+      setDisplayValue(waitingForOperand ? label : displayValue === '0' ? label : displayValue + label);
+      setWaitingForOperand(false);
+    } else if (label === '.') {
+      if (displayValue.length >= 9 || displayValue.includes('.')) return;
+
+      setDisplayValue(displayValue + '.');
+    } else if (['+', '-', '*', '/', '%'].includes(label)) {
+      if (value !== null && operator) {
+        const result = evaluate(value, parseFloat(displayValue), operator);
+        setDisplayValue(formatResult(result));
+        setValue(result);
+      } else {
+        setValue(parseFloat(displayValue));
+      }
+
+      setOperator(label);
+      setWaitingForOperand(true);
+    } else if (label === '=') {
+      if (value === null || operator === null) return;
+
+      const result = evaluate(value, parseFloat(displayValue), operator);
+      setDisplayValue(formatResult(result));
+      setValue(null);
+      setOperator(null);
+      setWaitingForOperand(false);
+    } else if (label === 'C') {
+      setDisplayValue('0');
+      setOperator(null);
+      setValue(null);
+      setWaitingForOperand(false);
+    } else if (label === 'CE') {
+      setDisplayValue(prevDisplayValue => {
+        if (prevDisplayValue.length > 1) {
+          return prevDisplayValue.slice(0, -1);
+        } else {
+          return '0';
+        }
+      });
+    } else if (label === '+/-') {
+      setDisplayValue(prevDisplayValue => {
+        const num = parseFloat(prevDisplayValue);
+        return formatResult(-num);
       });
     }
   };
 
-  const handleOperation = (op) => {
-    if (op === '=') {
-      performOperation();
+  const formatResult = (result) => {
+    if (isNaN(result)) {
+      return 'ERROR';
+    } else if (result < -999999999 || result > 999999999) {
+      return 'ERROR';
     } else {
-      if (currentValue === '') {
-        setCurrentValue(displayValue);
-      } else {
-        performOperation();
-      }
-      setOperation(op);
-      setMaxDigits(9); // Restablecer el límite de dígitos
+      const formattedResult = String(Math.abs(result)).slice(0, 8);
+      return result < 0 ? '-' + formattedResult : formattedResult;
     }
   };
 
-  const handleSpecialButton = (value) => {
-    switch (value) {
-      case 'C':
-        setDisplayValue('0');
-        setCurrentValue('');
-        setOperation(null);
-        setMaxDigits(9); // Restablecer el límite de dígitos
-        break;
-      case 'CE':
-        setDisplayValue('0');
-        break;
-      case '%':
-        const number = parseFloat(displayValue);
-        setDisplayValue((number / 100).toString());
-        break;
-      case '+/-':
-        const num = parseFloat(displayValue);
-        setDisplayValue((-num).toString());
-        break;
-      default:
-        break;
-    }
-  };
-
-  const performOperation = () => {
-    const num1 = parseFloat(currentValue);
-    const num2 = parseFloat(displayValue);
+  const evaluate = (val1, val2, operator) => {
+    const num1 = parseFloat(val1);
+    const num2 = parseFloat(val2);
     let result;
 
-    switch (operation) {
+    switch (operator) {
       case '+':
         result = num1 + num2;
         break;
@@ -84,37 +89,31 @@ const Calculator = () => {
       case '/':
         result = num1 / num2;
         break;
-      default:
+      case '%':
+        result = num1 % num2;
         break;
+      default:
+        return val2;
     }
 
-    if (result < 0) {
-      setDisplayValue('ERROR');
-    } else if (result > 999999999) {
-      setDisplayValue('ERROR');
-    } else {
-      setDisplayValue(result.toString().slice(0, 9));
-      setCurrentValue(result.toString().slice(0, 9)); // Actualizar currentValue con el resultado
-    }
-
-    setOperation(null);
-    setMaxDigits(9); // Restablecer el límite de dígitos
+    return result;
   };
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       const { key } = event;
-      if (/\d/.test(key)) {
-        if (displayValue.length >= maxDigits) return;
-        handleClick(key);
-      } else if (/[-+/*=]/.test(key)) {
-        handleClick(key, true);
+      if (/\d|[-+*/%=]/.test(key)) {
+        handleButtonClick(key);
+        setActiveButton(key);
       } else if (key === 'Backspace') {
-        handleClick('CE', false, true);
+        handleButtonClick('CE');
+        setActiveButton('CE');
       } else if (key === 'Delete') {
-        handleClick('C', false, true);
+        handleButtonClick('C');
+        setActiveButton('C');
       } else if (key === 'Enter') {
-        handleClick('=', true);
+        handleButtonClick('=');
+        setActiveButton('=');
       }
     };
 
@@ -122,14 +121,25 @@ const Calculator = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [displayValue, maxDigits, handleClick]);
+  }, [handleButtonClick]);
+
+  useEffect(() => {
+    if (activeButton) {
+      const timeout = setTimeout(() => {
+        setActiveButton(null);
+      }, 100); 
+
+      return () => clearTimeout(timeout);
+    }
+  }, [activeButton]);
 
   return (
     <div className={styles.container}>
       <Display value={displayValue} />
-      <Keypad handleClick={handleClick} />
+      <Keypad onButtonClick={handleButtonClick} activeButton={activeButton} setActiveButton={setActiveButton} />
     </div>
   );
 };
+
 
 export default Calculator;

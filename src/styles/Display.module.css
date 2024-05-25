@@ -1,15 +1,13 @@
 
 .display {
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid #910572;
   border-radius: 5px;
   padding: 10px;
-  margin-bottom: 20px;
-  width: 240px;
+  margin-bottom: 30px;
+  width: 260px;
+  height: 50px;
+  font-size: 50px;
   text-align: right;
-}
-
-.displayValue {
-  font-size: 2rem;
-  font-weight: bold;
+  font-family:monospace;
 }
